@@ -8,6 +8,8 @@ sys.path.append(".")
 from library import *
 from concurrent.futures import ThreadPoolExecutor
 import time
+from post_message import Slack,Email
+import traceback
 
 executor = ThreadPoolExecutor(5)
 setup_logging()
@@ -20,15 +22,23 @@ def message_handler(message):
     data_payload = json.loads(data)
     user = data_payload['user']
     text = data_payload['message']
-    owner = data_payload['owner']
     entity = data_payload['entity']
     db_id = data_payload['id']
-    if entity.lower() == "slack":
-        pass
-    elif entity.lower() == "email":
-        pass
-        
-    executor.submit(mongo_update,db_id,"{} SUCCESSFUL".format(entity))
+    status = "{} SUCCESSFUL".format(entity)
+    result_payload=''
+    try:
+        if entity.lower() == "slack":
+            slack = Slack()
+            slack.sendMessage(user,text)
+        elif entity.lower() == "email":
+            email = Email()
+            email.sendMessage(user,text)
+    except Exception as e:
+        logging.error("Error occurred {} {}".format(e,traceback.format_exc()))
+        status = "{} FAILED".format(entity)
+        result_payload = str(e)
+    finally:
+        executor.submit(mongo_update,db_id,status,result_payload=result_payload)
 
 
 def main():

@@ -23,8 +23,7 @@ def post_message_to_entity(entity,request):
     if request.is_json:
         payload = request.get_json()
         user = payload.get('user',None)
-        owner = payload.get('owner',None)
-        if user and payload.get('message',None) and owner:
+        if user and payload.get('message',None):
             db_id = add_to_db(payload,ADDING_TO_REDIS_QUEUE,entity)
             executor.submit(publish_to_redis,payload,db_id,entity)
             res.data=str(db_id)
@@ -34,12 +33,10 @@ def post_message_to_entity(entity,request):
     else:
         user = request.args.get('user',None)
         message=request.args.get('message',None)
-        owner=request.args.get('owner',None)
-        if user and message and owner :
+        if user and message:
             payload = {
                 'user':user,
                 'message': message,
-                'owner' : owner
             }
             db_id = add_to_db(payload,ADDING_TO_REDIS_QUEUE,entity)
             executor.submit(publish_to_redis,payload,db_id,entity)

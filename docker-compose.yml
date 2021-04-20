@@ -33,7 +33,6 @@ services:
     build:
       context: worker
     environment:
-      - SLACK_BOT_TOKEN
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - MONGO_HOST=mongodb
@@ -42,6 +41,11 @@ services:
       - MONGO_INITDB_DATABASE=test
       - MONGO_COLLECTION=my-collection
       - REDIS_CHANNEL=NOTIFICATION
+      - SLACK_BOT_TOKEN
+      - SMTP_SERVER
+      - SMTP_PORT
+      - SERVICE_EMAIL
+      - SERVICE_PASSWORD
     volumes:
       - ./:/app
     depends_on: 
