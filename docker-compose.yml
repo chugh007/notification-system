@@ -4,18 +4,21 @@ services:
     build:
       context: webserver
     environment:
-      - SLACK_BOT_TOKEN
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - MONGO_HOST=mongo
+      - MONGO_HOST=mongodb
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
       - MONGO_INITDB_DATABASE
+      - MONGO_COLLECTION=my-collection
+      - REDIS_CHANNEL=NOTIFICATION
     volumes:
       - ./:/app
     depends_on: 
       - mongodb
       - redis
+    ports:
+      - "5000:5000"
   mongodb:
     image: mongo:3.6
     environment:
@@ -33,7 +36,7 @@ services:
       - SLACK_BOT_TOKEN
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - MONGO_HOST=mongo
+      - MONGO_HOST=mongodb
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
       - MONGO_INITDB_DATABASE
