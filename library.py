@@ -1,8 +1,10 @@
 import os
 import logging
+import json
 from pymongo import MongoClient
 from redis import Redis
 import copy
+from bson.objectid import ObjectId  
 
 MONGO_INITDB_ROOT_USERNAME = os.environ.get('MONGO_INITDB_ROOT_USERNAME','root')
 MONGO_INITDB_ROOT_PASSWORD = os.environ.get('MONGO_INITDB_ROOT_PASSWORD','root')
@@ -55,9 +57,9 @@ def add_to_db(payload,status,entity):
 
 def publish_to_redis(payload,db_id,entity):
     json_payload = copy.deepcopy(payload)
-    json_payload['id'] = db_id
+    json_payload['id'] = str(db_id)
     json_payload['entity'] = entity
-    redis.publish(REDIS_CHANNEL,json_payload)
+    redis.publish(REDIS_CHANNEL,json.dumps(json_payload,indent=2))
 
 def subscribe_channel(channel_name=REDIS_CHANNEL,handler=None):
     if handler:
@@ -67,3 +69,10 @@ def subscribe_channel(channel_name=REDIS_CHANNEL,handler=None):
 
 def redis_channel_get_message():
     pubsub.get_message()
+
+def mongo_update(id,status,result_payload = ''):
+    myquery = {"_id" : ObjectId(id)}
+    new_values = {"$set": {'status' : status , 'result_payload' : result_payload}}
+    db = mongo_client[MONGO_INITDB_DATABASE]
+    collection = db[COLLECTION]
+    collection.update_one(myquery,new_values)

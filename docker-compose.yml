@@ -9,7 +9,7 @@ services:
       - MONGO_HOST=mongodb
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
-      - MONGO_INITDB_DATABASE
+      - MONGO_INITDB_DATABASE=test
       - MONGO_COLLECTION=my-collection
       - REDIS_CHANNEL=NOTIFICATION
     volumes:
@@ -39,12 +39,15 @@ services:
       - MONGO_HOST=mongodb
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
-      - MONGO_INITDB_DATABASE
+      - MONGO_INITDB_DATABASE=test
+      - MONGO_COLLECTION=my-collection
+      - REDIS_CHANNEL=NOTIFICATION
     volumes:
       - ./:/app
     depends_on: 
       - mongodb
       - redis
+    restart: always
     
 
     

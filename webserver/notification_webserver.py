@@ -43,6 +43,7 @@ def post_message_to_entity(entity,request):
             }
             db_id = add_to_db(payload,ADDING_TO_REDIS_QUEUE,entity)
             executor.submit(publish_to_redis,payload,db_id,entity)
+            #publish_to_redis(payload,db_id,entity)
             res.data=str(db_id)
             
         else:
