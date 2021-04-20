@@ -1,0 +1,51 @@
+version: "3"
+services: 
+  app:
+    build:
+      context: webserver
+    environment:
+      - SLACK_BOT_TOKEN
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGO_HOST=mongo
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE
+    volumes:
+      - ./:/app
+    depends_on: 
+      - mongodb
+      - redis
+  mongodb:
+    image: mongo:3.6
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE=test
+    restart: always
+  redis:
+    image: redis
+    restart: always
+  worker:
+    build:
+      context: worker
+    environment:
+      - SLACK_BOT_TOKEN
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGO_HOST=mongo
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE
+    volumes:
+      - ./:/app
+    depends_on: 
+      - mongodb
+      - redis
+    
+
+    
+  
+    
+  
+  
