@@ -1,2 +1,3 @@
 redis
 pymongo
+slack_sdk
