@@ -1,60 +1,28 @@
 import os
 import json
+import sys
+sys.path.append(".")
+from library import *
 from pymongo import MongoClient
 from redis import Redis
 from flask import Flask, request, Response
 from flask_executor import Executor
-import copy
 
 app = Flask(__name__)
 executor = Executor(app)
-
-MONGO_INITDB_ROOT_USERNAME = os.environ.get('MONGO_INITDB_ROOT_USERNAME','root')
-MONGO_INITDB_ROOT_PASSWORD = os.environ.get('MONGO_INITDB_ROOT_PASSWORD','root')
-MONGO_INITDB_DATABASE = os.environ.get('MONGO_INITDB_DATABASE','test')
-MONGO_HOST = os.environ['MONGO_HOST']
-REDIS_HOST = os.environ['REDIS_HOST']
-REDIS_PORT= int(os.environ.get('REDIS_PORT',6379))
-COLLECTION=os.environ.get('MONGO_COLLECTION','my-collection')
-ADDING_TO_REDIS_QUEUE = "ADDING TO REDIS QUEUE"
-PUSHED_TO_REDIS_QUEUE = "PUSHED TO REDIS QUEUE"
-redis = Redis(REDIS_HOST,REDIS_PORT,db=0)
-REDIS_CHANNEL = os.environ.get('REDIS_CHANNEL','NOTIFICATION')
-
-def get_mongo_client():
-    client = MongoClient(
-        MONGO_HOST,
-        27017,
-        username=MONGO_INITDB_ROOT_USERNAME,
-        password=MONGO_INITDB_ROOT_PASSWORD
-    )
-    return client
-
-def add_to_db(payload,status,entity):
-    client = get_mongo_client()
-    db = client[MONGO_INITDB_DATABASE]
-    collection = db[COLLECTION]
-    json_payload = copy.deepcopy(payload)
-    json_payload['status'] = status
-    json_payload['entity'] = entity
-    inserted_id = collection.insert_one(json_payload).inserted_id
-    return inserted_id
-
-def publish_to_redis(payload,db_id):
-    json_payload = copy.deepcopy(payload)
-    json_payload['id'] = db_id
-    redis.publish(REDIS_CHANNEL,json_payload)
+setup_logging()
 
 def post_message_to_entity(entity,request):
     res = Response()
     res.content_type = 'application/json'
     res.status_code = 200
     res.data = 'SUCCESS'
-    error_msg = 'Please send user and message either in query parameters or as json payload.'
+    error_msg = 'Please send user, message and owner either in query parameters or as json payload.'
     if request.is_json:
         payload = request.get_json()
         user = payload.get('user',None)
-        if user and payload.get('message',None):
+        owner = payload.get('owner',None)
+        if user and payload.get('message',None) and owner:
             db_id = add_to_db(payload,ADDING_TO_REDIS_QUEUE,entity)
             executor.submit(publish_to_redis,payload,db_id)
             res.data=str(db_id)
@@ -64,10 +32,12 @@ def post_message_to_entity(entity,request):
     else:
         user = request.args.get('user',None)
         message=request.args.get('message',None)
-        if user and message :
+        owner=request.args.get('owner',None)
+        if user and message and owner :
             payload = {
                 'user':user,
-                'message': message
+                'message': message,
+                'owner' : owner
             }
             db_id = add_to_db(payload,ADDING_TO_REDIS_QUEUE,entity)
             executor.submit(publish_to_redis,payload,db_id)
@@ -93,6 +63,7 @@ def post_message_on_slack():
     """
     user: ldap name
     message
+    owner
     """
     return post_message_to_entity("SLACK",request)
 
