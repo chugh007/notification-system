@@ -14,8 +14,15 @@ COLLECTION=os.environ.get('MONGO_COLLECTION','my-collection')
 ADDING_TO_REDIS_QUEUE = "ADDING TO REDIS QUEUE"
 PUSHED_TO_REDIS_QUEUE = "PUSHED TO REDIS QUEUE"
 REDIS_CHANNEL = os.environ.get('REDIS_CHANNEL','NOTIFICATION')
+redis=None
+mongo_client = None
+pubsub = None
 
-redis = Redis(REDIS_HOST,REDIS_PORT,db=0)
+def init_redis_client():
+    global redis
+    global pubsub
+    redis = Redis(REDIS_HOST,REDIS_PORT,db=0)
+    pubsub = redis.pubsub(ignore_subscribe_messages=True)
 
 def setup_logging(log_dir="/tmp/", log_file="/tmp/app.log"):
     from logging.handlers import RotatingFileHandler
@@ -28,18 +35,17 @@ def setup_logging(log_dir="/tmp/", log_file="/tmp/app.log"):
                         datefmt = '%Y-%m-%d %H:%M:%S')
 
 
-def get_mongo_client():
-    client = MongoClient(
+def init_mongo_client():
+    global mongo_client
+    mongo_client = MongoClient(
         MONGO_HOST,
         27017,
         username=MONGO_INITDB_ROOT_USERNAME,
         password=MONGO_INITDB_ROOT_PASSWORD
     )
-    return client
 
 def add_to_db(payload,status,entity):
-    client = get_mongo_client()
-    db = client[MONGO_INITDB_DATABASE]
+    db = mongo_client[MONGO_INITDB_DATABASE]
     collection = db[COLLECTION]
     json_payload = copy.deepcopy(payload)
     json_payload['status'] = status
@@ -47,7 +53,17 @@ def add_to_db(payload,status,entity):
     inserted_id = collection.insert_one(json_payload).inserted_id
     return inserted_id
 
-def publish_to_redis(payload,db_id):
+def publish_to_redis(payload,db_id,entity):
     json_payload = copy.deepcopy(payload)
     json_payload['id'] = db_id
+    json_payload['entity'] = entity
     redis.publish(REDIS_CHANNEL,json_payload)
+
+def subscribe_channel(channel_name=REDIS_CHANNEL,handler=None):
+    if handler:
+        pubsub.subscribe(**{channel_name: handler})    
+    else:
+        pubsub.subscribe(channel_name)
+
+def redis_channel_get_message():
+    pubsub.get_message()

@@ -11,6 +11,8 @@ from flask_executor import Executor
 app = Flask(__name__)
 executor = Executor(app)
 setup_logging()
+init_redis_client()
+init_mongo_client()
 
 def post_message_to_entity(entity,request):
     res = Response()
@@ -24,7 +26,7 @@ def post_message_to_entity(entity,request):
         owner = payload.get('owner',None)
         if user and payload.get('message',None) and owner:
             db_id = add_to_db(payload,ADDING_TO_REDIS_QUEUE,entity)
-            executor.submit(publish_to_redis,payload,db_id)
+            executor.submit(publish_to_redis,payload,db_id,entity)
             res.data=str(db_id)
         else:
             res.data= error_msg
@@ -40,7 +42,7 @@ def post_message_to_entity(entity,request):
                 'owner' : owner
             }
             db_id = add_to_db(payload,ADDING_TO_REDIS_QUEUE,entity)
-            executor.submit(publish_to_redis,payload,db_id)
+            executor.submit(publish_to_redis,payload,db_id,entity)
             res.data=str(db_id)
             
         else:
