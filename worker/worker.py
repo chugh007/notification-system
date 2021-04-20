@@ -28,7 +28,7 @@ def message_handler(message):
     elif entity.lower() == "email":
         pass
         
-    executor.submit(mongo_update,db_id,"{} SUCCESSFUL".format(entity),result_payload='test')
+    executor.submit(mongo_update,db_id,"{} SUCCESSFUL".format(entity))
 
 
 def main():
