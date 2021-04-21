@@ -79,7 +79,7 @@ System services include :
 
 ####  To generate SLACK_BOT_TOKEN ,first create an app and add to workspace https://youtu.be/Rufh3MjJz9g . Full tutorial to set up the app and generate the SLACK_BOT_TOKEN https://api.slack.com/tutorials/tracks/actionable-notifications .
 
-### Execute the following code start the server
+### Execute the following code to start the server
 
 Start the server by pulling images from docker hub
 ```
