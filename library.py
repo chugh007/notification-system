@@ -76,3 +76,9 @@ def mongo_update(id,status,result_payload = ''):
     db = mongo_client[MONGO_INITDB_DATABASE]
     collection = db[COLLECTION]
     collection.update_one(myquery,new_values)
+
+def get_obj_by_id(id):
+    myquery = {"_id" : ObjectId(id)}
+    db = mongo_client[MONGO_INITDB_DATABASE]
+    collection = db[COLLECTION]
+    return collection.find(myquery)[0]

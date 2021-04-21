@@ -1,5 +1,13 @@
 version: "3"
 services: 
+  nginx:
+    build:
+      context: nginx
+    depends_on: 
+      - app
+    ports:
+      - "80:80"
+    restart: always
   app:
     build:
       context: webserver
@@ -17,8 +25,7 @@ services:
     depends_on: 
       - mongodb
       - redis
-    ports:
-      - "27000:5000"
+    restart: always
   mongodb:
     image: mongo:3.6
     environment:
