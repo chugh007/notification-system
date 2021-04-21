@@ -1,0 +1,5 @@
+env:
+  - DOCKER_COMPOSE_VERSION=1.4.2
+script:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker-compose push

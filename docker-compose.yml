@@ -3,6 +3,7 @@ services:
   nginx:
     build:
       context: nginx
+    image: rahulchugh7/notification-system_nginx
     depends_on: 
       - app
     ports:
@@ -11,6 +12,7 @@ services:
   app:
     build:
       context: webserver
+    image: rahulchugh7/notification-system_app
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -39,6 +41,7 @@ services:
   worker:
     build:
       context: worker
+    image: rahulchugh7/notification-system_worker
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
