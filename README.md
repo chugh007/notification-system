@@ -1,5 +1,7 @@
 # Centralised Notification-system 
 
+Make your scripts talk back to you using slack or emails!!!!
+
 This system intends to create a centralised system which can send slack/email notification to any user in workspace using their email addresses .
 The system services can be accessed via simple API calls, so it is easy to add anywhere in code and in ci/cd tools without depending on any plugins
 
