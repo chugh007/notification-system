@@ -7,6 +7,7 @@ import smtplib, ssl
 import sys
 sys.path.append(".")
 from library import *
+import re
 
 setup_logging()
 
@@ -34,8 +35,11 @@ class Slack(PostMessage):
 
 
     def sendMessage(self,email , message):
-        resp = self.client.users_lookupByEmail(email = email)  
-        user_id = resp.data['user']['id']
+        if re.match(r"^@.*",email): #check if entered email is a channel name
+            user_id = email[1:] #remove @ and send message to channel
+        else:
+            resp = self.client.users_lookupByEmail(email = email)  
+            user_id = resp.data['user']['id']
         resp = self.client.chat_postMessage(channel=user_id, text= message)
         logging.info("Message {} send to user with email {}" .format(message , email))
 
